@@ -10,7 +10,7 @@ import datetime
 
 class MakeFile():
     def __init__(self, text, config):
-       self.text = text 
+       self.text = text
        self.conote_dir = config['FILE']['conote_dir'] 
        self.conote_file = '/'.join([self.conote_dir, config['FILE']['conote_file']])
        self.current_time = datetime.datetime.now()
@@ -33,13 +33,15 @@ class MakeFile():
     @property
     def file_check(self) -> bool:
         '''Checks existing conote current day file, specified in config/config.ini'''
-        if os.path.exists(self.conote_file):
-           return True 
+        if os.path.isfile(self.conote_file):
+           print(self.conote_file)
+           return True
         else:
             try:
                 with open(self.conote_file, 'a') as conote_f:
                     with open(self.template_file, 'r') as template_f:
                         conote_f.write(template_f.read())
+                        print(template_f.read())
                 return True
             except OSError as e:
                 print(e)
@@ -47,7 +49,7 @@ class MakeFile():
 
     def file_write(self) -> None:
         '''Write text in file'''
-        if self.dir_check and self.file_write:
+        if self.dir_check and self.file_check:
             try:
                 with open(self.conote_file, 'a') as conote_f:
                     with open(self.template_event, 'r') as event_template_f:
