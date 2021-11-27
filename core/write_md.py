@@ -9,18 +9,20 @@ import os
 import datetime
 
 class MakeFile():
-    def __init__(self, text, config):
-       self.text = text
-       self.config = config
-       self.conote_dir = self.config['FILE']['conote_dir'] 
-       self.conote_file = '/'.join([self.conote_dir, self.config['FILE']['conote_file']])
-       self.date_time = datetime.datetime.now()
-       self.template_file = self.config['FILE']['template_file']
-       self.template_event = self.config['FILE']['template_event']
+    def __init__(self, text, config, template_tags):
+        self.template_tags = template_tags
+        self.text = text
+        self.config = config
+        self.conote_dir = self.config['FILE']['conote_dir'] 
+        self.conote_file = '/'.join([self.conote_dir, self.config['FILE']['conote_file']])
+        self.date_time = datetime.datetime.now()
+        self.template_file = self.config['FILE']['template_file']
+        self.template_event = self.config['FILE']['template_event']
 
     @property
     def dir_check(self) -> bool:
         '''Checks existing conote directory, specified in config/config.ini'''
+        # breakpoint()
         if os.path.isdir(self.conote_dir):
             return True
         else:
@@ -38,7 +40,6 @@ class MakeFile():
            return True
         else:
             try:
-                # breakpoint()
                 with open(self.conote_file, 'w') as conote_f:
                     with open(self.template_file, 'r') as template_f:
                         header = template_f.read()
@@ -48,21 +49,21 @@ class MakeFile():
                 return False
             return True
 
-    # def tag_dict(self):
-        # for line in str(os.system('lsb_release -a')):
-            # if 'Description:' in line:
-                # dist = line.split()[1]
-                # print(dist)
+    def tag_replace(self, event_template_text):
+        for tag in self.template_tags:
+            if tag in event_template_text:
+                 event_template_text = event_template_text.replace(tag,str(self.template_tags[tag]))
+        return event_template_text
+
     # TODO Need to create template tags interpretation
     def file_write(self) -> None:
         '''Write text in file'''
-        # breakpoint()
         if self.dir_check and self.file_check:
             try:
                 with open(self.conote_file, 'a') as conote_f:
                     with open(self.template_event, 'r') as event_template_f:
-                        conote_f.write(event_template_f.read())
-                        self.tag_dict()
+                        templ_text = self.tag_replace(event_template_f.read())
+                        conote_f.write(templ_text)
                         conote_f.write(''.join(['> ', self.text]))
             except OSError as e:
                 print(e)
