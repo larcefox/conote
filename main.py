@@ -11,6 +11,8 @@ from core.write_md import MakeFile
 import configparser
 from datetime import datetime 
 import os
+import subprocess
+
 
 path = os.path.abspath('.')
 config = configparser.ConfigParser()
@@ -26,7 +28,7 @@ def get_uptime():
 tag_upt = int(get_uptime())
 tag_date = datetime.now().strftime('%y%m%d')
 tag_time =  datetime.now().strftime('%H:%M')
-tag_sys_name = platform.release() 
+tag_sys_name = platform.node()
 tag_user = os.environ['USER']
 
 hour_to_day = 24
@@ -46,11 +48,20 @@ template_tags = {
 # ====================TAGS===================================================
 
 parser = argparse.ArgumentParser(description='Making notes from consolee')
-parser.add_argument('-f', dest='message', action='store_const', 
-        const=input("Message:"), 
+parser.add_argument('message', type=str, nargs='+',
         help='(Specified that note shoud be saved in .md file.)')
+parser.add_argument('-r', '--remind', dest='run_at', action='store_true',
+        help='(Show message to you at specified time.)')
+
+args = parser.parse_args()
+space_str = ' '
+at_command = 'echo "echo {space_str.join(args.message)} \
+        | write {tag_user}" | at now + 1 min'
+
 
 if __name__== '__main__':
-    args = parser.parse_args()
-    md_file = MakeFile(args.message, config, template_tags) 
+    print(" ".join(args.message))
+    args.run_at and subprocess.run(at_command, shell=True) 
+
+    md_file = MakeFile(" ".join(args.message), config, template_tags) 
     md_file.file_write()

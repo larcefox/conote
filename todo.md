@@ -8,7 +8,6 @@
 | - Make template for *.md file           |                                                 | done   |
 | - Make event in google calendar         |                                                 |        |
 | - Make multiline notes with vi or nanoc |                                                 |        |
-|-----------------------------------------|-------------------------------------------------|--------|
 
 211127
 Need to read about argparse more, its not working propperly.
