@@ -50,18 +50,20 @@ template_tags = {
 parser = argparse.ArgumentParser(description='Making notes from consolee')
 parser.add_argument('message', type=str, nargs='+',
         help='(Specified that note shoud be saved in .md file.)')
-parser.add_argument('-r', '--remind', dest='run_at', action='store_true',
+parser.add_argument('-r', '--remind', dest='run_at', type=int, 
+        nargs=1, 
         help='(Show message to you at specified time.)')
 
 args = parser.parse_args()
 space_str = ' '
-at_command = 'echo "echo {space_str.join(args.message)} \
-        | write {tag_user}" | at now + 1 min'
+at_command = f'echo "echo {space_str.join(args.message)} \
+        | write {tag_user}" | at now + {args.run_at[0]} min'
 
 
 if __name__== '__main__':
-    print(" ".join(args.message))
-    args.run_at and subprocess.run(at_command, shell=True) 
+    args.run_at and subprocess.run(
+            at_command, shell=True,
+            stderr=subprocess.DEVNULL) 
 
     md_file = MakeFile(" ".join(args.message), config, template_tags) 
     md_file.file_write()

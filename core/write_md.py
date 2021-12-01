@@ -50,6 +50,7 @@ class MakeFile():
             return True
 
     def tag_replace(self, event_template_text):
+        '''Place varibls insted tags in template'''
         for tag in self.template_tags:
             if tag in event_template_text:
                  event_template_text = event_template_text.replace(tag,str(self.template_tags[tag]))
@@ -57,7 +58,7 @@ class MakeFile():
 
     # TODO Need to create template tags interpretation
     def file_write(self) -> None:
-        '''Write text in file'''
+        '''Write messagei in file'''
         if self.dir_check and self.file_check:
             try:
                 with open(self.conote_file, 'a') as conote_f:
