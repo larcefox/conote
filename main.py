@@ -12,6 +12,8 @@ import configparser
 from datetime import datetime 
 import os
 import subprocess
+import sys
+import select
 
 
 path = os.path.abspath('.')
@@ -25,27 +27,31 @@ def get_uptime():
         uptime_seconds = float(f.readline().split()[0])
     return uptime_seconds
 
-tag_upt = int(get_uptime())
-tag_date = datetime.now().strftime('%y%m%d')
-tag_time =  datetime.now().strftime('%H:%M')
-tag_sys_name = platform.node()
-tag_user = os.environ['USER']
+template_veribls = {
+    'tag_upt' : int(get_uptime()),
+    'tag_date' : datetime.now().strftime('%y%m%d'),
+    'tag_time' :  datetime.now().strftime('%H:%M'),
+    'tag_sys_name' : platform.node(),
+    'tag_user' : os.environ['USER']}
 
 hour_to_day = 24
 sec_to_min = 60
 template_tags = {
-        config['TAGS']['current_date'] : tag_date,
-        config['TAGS']['current_time'] : tag_time,
-        config['TAGS']['current_system'] : tag_sys_name, 
+        config['TAGS']['current_date'] : template_veribls['tag_date'],
+        config['TAGS']['current_time'] : template_veribls['tag_time'],
+        config['TAGS']['current_system'] : template_veribls['tag_sys_name'], 
         config['TAGS']['uptime'] : ':'.join([
-            str(tag_upt // sec_to_min // sec_to_min // hour_to_day), 
-            str(tag_upt // (sec_to_min * sec_to_min) % hour_to_day), 
-            str(tag_upt // sec_to_min % sec_to_min), 
-            str(tag_upt % sec_to_min)]),
-        config['TAGS']['user'] : tag_user}
+            str(template_veribls['tag_upt'] // sec_to_min // sec_to_min // hour_to_day), 
+            str(template_veribls['tag_upt'] // (sec_to_min * sec_to_min) % hour_to_day), 
+            str(template_veribls['tag_upt'] // sec_to_min % sec_to_min), 
+            str(template_veribls['tag_upt'] % sec_to_min)]),
+        config['TAGS']['user'] : template_veribls['tag_user']}
 
 
 # ====================TAGS===================================================
+
+if select.select([sys.stdin,], [], [], 0.0)[0]: 
+    sys.argv.append(sys.stdin.read())
 
 parser = argparse.ArgumentParser(description='Making notes from consolee')
 parser.add_argument('message', type=str, nargs='+',
@@ -53,17 +59,18 @@ parser.add_argument('message', type=str, nargs='+',
 parser.add_argument('-r', '--remind', dest='run_at', type=int, 
         nargs=1, 
         help='(Show message to you at specified time.)')
-
 args = parser.parse_args()
-space_str = ' '
-at_command = f'echo "echo {space_str.join(args.message)} \
-        | write {tag_user}" | at now + {args.run_at[0]} min'
+
+if args.run_at:
+    space_str = ' '
+    at_command = \
+    f"""echo "echo {space_str.join(args.message)} | write {template_veribls['tag_user']}" | at now + {args.run_at[0]} min"""
+    subprocess.run(
+            at_command, shell=True,
+            stderr=subprocess.DEVNULL) 
 
 
 if __name__== '__main__':
-    args.run_at and subprocess.run(
-            at_command, shell=True,
-            stderr=subprocess.DEVNULL) 
 
     md_file = MakeFile(" ".join(args.message), config, template_tags) 
     md_file.file_write()
