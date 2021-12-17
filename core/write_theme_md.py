@@ -1,6 +1,6 @@
 #!./env/bin/python
 
-"""write_md.py: modual for creating folder and files."""
+"""write_theme_md.py: modual for creating themed note files."""
 
 __author__      = "Bac9l Xyer"
 __copyright__   = "GPLv3"
@@ -9,16 +9,16 @@ import os
 import datetime
 
 
-class MakeFile():
-    def __init__(self, text, config, template_tags):
+class MakeThemeFile():
+    def __init__(self, text: str, config, template_tags, theme_file):
         self.template_tags = template_tags
         self.text = text
         self.config = config
         self.conote_dir = self.config['FILE']['conote_dir'] 
-        self.conote_file = '/'.join([self.conote_dir, self.config['FILE']['conote_file']])
+        self.conote_file = '/'.join([self.conote_dir, ''.join([theme_file, '.md'])])
         self.date_time = datetime.datetime.now()
-        self.template_file = self.config['FILE']['template_file']
-        self.template_event = self.config['FILE']['template_event']
+        self.template_file = self.config['FILE']['template_theme_file']
+        self.template_event = self.config['FILE']['template_theme_event']
         self.md_new_line_simbol = self.config['MD_NEWLINE']['simbol']
 
     @property
@@ -66,11 +66,8 @@ class MakeFile():
                 with open(self.conote_file, 'a') as conote_f:
                     with open(self.template_event, 'r') as event_template_f:
                         templ_text = self.tag_replace(event_template_f.read())
+                        text_list = ''.join([self.text]).split('\n')
                         conote_f.write(templ_text)
-                        text_list = "".join(self.text).split('\n')
-                        [conote_f.write(''.join([
-                            self.md_new_line_simbol,
-                            line,
-                            '\n'])) for line  in text_list] 
+                        [conote_f.write(''.join([self.md_new_line_simbol, line, '\n'])) for line  in text_list] 
             except OSError as e:
                 print(e)
