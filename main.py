@@ -15,6 +15,7 @@ from datetime import datetime
 from loguru import logger
 
 from pathlib import Path
+from core.google_cal import GoogleCalendarAPI
 from core.reminder import Reminder
 from core.write_md import MakeFile
 from core.write_theme_md import MakeThemeFile
@@ -101,6 +102,12 @@ parser.add_argument(
     nargs="+",
     help="(Show message to you at specified time.)",
 )
+parser.add_argument(
+    "-c",
+    "--calendar",
+    action='store_true',
+    help="(Add note to google calendar)",
+)
 args = parser.parse_args()
 
 if __name__ == "__main__":
@@ -115,6 +122,8 @@ if __name__ == "__main__":
             user_meassage, config, template_tags, user_theme_file, path
         )
         theme_file_md.file_write()
-
+    if args.calendar:
+       calendar = GoogleCalendarAPI(user_meassage) 
+       calendar.quick_event_add()
     if args.run_at:
         reminder = Reminder(args, template_veriables)

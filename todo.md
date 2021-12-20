@@ -7,11 +7,10 @@
 | - Make reminder in console              |                                               | done   |
 | - Make template for *.md file           |                                               | done   |
 | - Make event in google calendar         |                                               |        |
-| - Make multiline notes with vi or nanoc |                                               |        |
 | - Make input from bash pipe             |                                               | done   |
 | - Relocate reminder to core dir         |                                               | done   |
 | - Make multiline input frome pipe       |                                               | done   |
-| - Make themes files with -t             |                                               |        |
+| - Make themes files with -t             |                                               | done   |
 
 211127
 Need to read about argparse more, its not working propperly.
