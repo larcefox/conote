@@ -10,6 +10,16 @@
 3. Add to youre .bashrc or similar
 > alias note="path_to_main.py"
 
+4. Install librarys
+>   pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+
+5. For using google calendar required registred app in 
+Google cloud console with Oauth authentication and
+permission to create secondary calendars.
+You mast activate calendar api.
+Download Oauth credentials to conote/credentials folder.
+
+
 ## Usage
 - Save note to ~/.connote/conote.md
 > note youre text here
@@ -36,9 +46,13 @@ or
 - Save curret file list
 > note *
 
+- Save note to google calendar
+> note your text here -c
+
 - If you want to write special simbols in note use "\" before simbol.
 > note tmux kill-server \> kills all tmux session -t tmux
 
+
 ## Using tags and templates
 - You can modify default templates in conote/templates folder.
-- Default tags can be finde in conote/config/config.ini file.
+- Default tags can be fonde in conote/config/config.ini file.

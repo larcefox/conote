@@ -6,6 +6,7 @@ __author__ = "Bac9l Xyer"
 __copyright__ = "GPLv3"
 
 # from __future__ import print_function
+import urllib.request
 import os.path
 from datetime import datetime
 from googleapiclient.discovery import build
@@ -13,10 +14,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from pathlib import Path
-from loguru import logger
 
-
-logger.add('loguru.log', format="{time} {level} {message}", filter="my_module", level="INFO")
 
 class GoogleCalendarAPI:
     def __init__(self, message=None):
@@ -28,8 +26,16 @@ class GoogleCalendarAPI:
         self.SCOPES = ["https://www.googleapis.com/auth/calendar"]
         # If modifying these scopes, delete the file token.json.
         self.message = message
-        self.get_creds()
+        self.get_creds() if self.connect else print('No internet connection') and exit()
 
+    @property
+    def connect(self, host='http://google.com'):
+        '''Checks internet connection'''
+        try:
+            urllib.request.urlopen(host)
+            return True
+        except:
+            return False
 
     def get_creds(self):
         '''Inits service with given constants'''
@@ -51,21 +57,39 @@ class GoogleCalendarAPI:
                 token.write(creds.to_json())
         self.service = build(self.API_NAME, self.API_VERSION, credentials=creds)
 
+    @property
+    def check_conote_calendar(self):
+        '''Check conote calendar existing'''
+        calendar_list = self.service.calendarList().list().execute()
+        exist = False
+        for calendar in calendar_list['items']:
+            if 'primary' in calendar:
+                self.time_zone = calendar['timeZone']
+            if calendar['summary'] == 'conote':
+                self.conot_calendar_id = calendar['id']
+                exist = True
+        return exist
 
-    def get_calendars_list(self):
-        #List all calendars
-        page_token = None
-        while True:
-            calendar_list = self.service.calendarList().list(pageToken=page_token).execute()
-            for calendar_list_entry in calendar_list['items']:
-                print(calendar_list_entry['summary'])
-                logger.info(f'{calendar_list_entry["id"]}')
-            page_token = calendar_list.get('nextPageToken')
-            if not page_token:
-                break
+    def create_conote_calendar(self, time_zone):
+        '''Creates calendar for notig'''
+        calendar = {
+        'summary': 'conote',
+        'timeZone': time_zone,
+        }
+        created_calendar = self.service.calendars().insert(body=calendar).execute()
+        self.conot_calendar_id = created_calendar['id']
 
+    def quick_event_add(self):
+        '''Add quik event to primary calendar'''
+        if not self.check_conote_calendar:
+            self.create_conote_calendar(self.time_zone)
+
+        created_event = self.service.events().quickAdd(
+        calendarId = self.conot_calendar_id,
+        text=self.message).execute()
+    
     def get_events(self):
-        # Call the Calendar API
+        '''Shows first 50 events from primary calendar'''
         now = datetime(datetime.now().year, 1, 1).isoformat() + "Z"  # 'Z' indicates UTC time
         print("Getting the upcoming 10 events")
         events_result = (
@@ -90,10 +114,6 @@ class GoogleCalendarAPI:
             except KeyError:
                 print(event['id'])
 
-    def quick_event_add(self):
-        created_event = self.service.events().quickAdd(
-        calendarId='primary',
-        text=self.message).execute()
 
 
 if __name__ == '__main__':
